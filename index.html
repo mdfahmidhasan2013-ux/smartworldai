@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart World - Modern AI Assistant</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e5edff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                            accent: '#a855f7'
+                        },
+                        darkbg: {
+                            base: '#090d16',
+                            card: '#131b2e',
+                            border: '#1e293b'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2.5s ease-in-out infinite alternate',
+                        'float': 'float 4s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 8px rgba(168, 85, 247, 0.3)' },
+                            '100%': { boxShadow: '0 0 25px rgba(168, 85, 247, 0.7), 0 0 35px rgba(99, 102, 241, 0.5)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Marked JS for Rendering Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #080c14;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.12) 0px, transparent 50%);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: rgba(19, 27, 46, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .glass-panel {
+            background: rgba(13, 19, 33, 0.9);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Rendered Code Block Styling */
+        pre {
+            background-color: #090d16 !important;
+            border: 1px solid #1e293b;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+        }
+
+        .prose p {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+        .prose ul, .prose ol {
+            margin-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .prose ul { list-style-type: disc; }
+        .prose ol { list-style-type: decimal; }
+        .prose strong { color: #f1f5f9; font-weight: 700; }
+    </style>
+</head>
+<body class="text-slate-100 h-full flex overflow-hidden antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 glass-panel transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-2xl">
+        <div class="p-4 flex flex-col h-full">
+            
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800/80">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-tr from-brand-600 via-brand-accent to-purple-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/25 animate-float flex-shrink-0">
+                        <!-- Custom Image Logo -->
+                        <img src="https://i.ibb.co.com/p6ZstQdv/image.png" alt="Logo" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-white via-slate-200 to-purple-400 bg-clip-text text-transparent">Smart World</h1>
+                        <span class="text-[11px] text-purple-400 font-medium tracking-wider uppercase">AI Platform</span>
+                    </div>
+                </div>
+                <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- New Chat Button -->
+            <button id="newChatBtn" class="mt-4 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-accent hover:opacity-95 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-brand-600/30 transition-all active:scale-95">
+                <i class="fa-solid fa-plus text-sm"></i>
+                <span>New Chat</span>
+            </button>
+
+            <!-- Quick Topics -->
+            <div class="mt-6">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 mb-2">Popular Topics</p>
+                <div class="space-y-1 text-sm overflow-y-auto max-h-44 pr-1">
+                    <button onclick="quickPrompt('Discuss science and modern technology')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-800/60 text-slate-300 hover:text-white flex items-center gap-2.5 transition text-xs">
+                        <i class="fa-solid fa-flask text-purple-400 w-4"></i> Science & Tech
+                    </button>
+                    <button onclick="quickPrompt('What is the best roadmap to learn programming?')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/60 text-slate-300 hover:text-white flex items-center gap-2.5 transition text-xs">
+                        <i class="fa-solid fa-code text-indigo-400 w-4"></i> Programming
+                    </button>
+                    <button onclick="quickPrompt('What daily routine should I follow for good health?')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/60 text-slate-300 hover:text-white flex items-center gap-2.5 transition text-xs">
+                        <i class="fa-solid fa-heart-pulse text-emerald-400 w-4"></i> Health & Fitness
+                    </button>
+                    <button onclick="quickPrompt('Generate a sci-fi futuristic landscape image')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/60 text-slate-300 hover:text-white flex items-center gap-2.5 transition text-xs">
+                        <i class="fa-solid fa-wand-magic-sparkles text-pink-400 w-4"></i> AI Image Generator
+                    </button>
+                    <button onclick="quickPrompt('Solve 25 * (45 - 12) / 3 with step-by-step explanation')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/60 text-slate-300 hover:text-white flex items-center gap-2.5 transition text-xs">
+                        <i class="fa-solid fa-calculator text-amber-400 w-4"></i> Math Solver
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Chat History -->
+            <div class="mt-6 flex-1 overflow-y-auto">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 mb-2">Recent History</p>
+                <div id="chatHistoryList" class="space-y-1 text-xs">
+                    <div class="px-3 py-2 text-slate-500 italic">No history yet</div>
+                </div>
+            </div>
+
+            <!-- Creator Credit Footer -->
+            <div class="pt-4 mt-auto border-t border-slate-800/80">
+                <div class="glass p-3 rounded-xl flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-accent flex items-center justify-center text-white font-bold text-sm shadow overflow-hidden">
+                        <!-- Custom Image Profile Logo -->
+                        <img src="https://i.ibb.co.com/p6ZstQdv/image.png" alt="Profile" class="w-full h-full object-cover">
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Created By</p>
+                        <p class="text-xs font-bold text-slate-100 truncate">Fahmid Hasan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile drawer -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-950/80 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- Main Application UI -->
+    <main class="flex-1 flex flex-col h-full w-full md:ml-72 relative">
+        
+        <!-- App Header Bar -->
+        <header class="h-16 border-b border-slate-800/80 glass px-4 md:px-6 flex items-center justify-between z-20 shadow-md">
+            <div class="flex items-center gap-3">
+                <button id="openSidebarBtn" class="md:hidden text-slate-300 hover:text-white p-2 rounded-xl hover:bg-slate-800/80 transition">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="font-bold text-base md:text-lg text-slate-100">Smart World</h2>
+                        <span class="px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full bg-brand-500/20 text-brand-accent border border-brand-500/30">v3.0 Gemini</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="statusIndicator" class="text-xs text-slate-400 font-medium">Online & Ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Controls -->
+            <div class="flex items-center gap-2">
+                <button id="clearChatBtn" title="Clear Chat" class="p-2.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800/80 transition">
+                    <i class="fa-solid fa-trash-can text-sm"></i>
+                </button>
+                <div class="h-4 w-[1px] bg-slate-800 mx-1"></div>
+                <div class="flex items-center gap-1.5 text-xs font-medium text-slate-300 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800/80 shadow-inner">
+                    <i class="fa-solid fa-globe text-brand-500"></i>
+                    <span>Multilingual</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div id="chatContainer" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
+            
+            <!-- Welcome View -->
+            <div id="welcomeScreen" class="max-w-2xl mx-auto my-auto py-10 text-center space-y-6">
+                <div class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-brand-600 via-purple-600 to-indigo-500 flex items-center justify-center shadow-2xl shadow-brand-500/40 animate-glow overflow-hidden p-2">
+                    <!-- Welcome Screen Main Logo -->
+                    <img src="https://i.ibb.co.com/p6ZstQdv/image.png" alt="Smart World Logo" class="w-full h-full object-cover rounded-2xl">
+                </div>
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-slate-100">Welcome to Smart World AI</h2>
+                    <p class="text-slate-400 text-sm md:text-base mt-2 max-w-lg mx-auto">
+                        Ask any question in any language. I will automatically respond in the language you speak!
+                    </p>
+                </div>
+
+                <!-- Quick Prompts Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-left pt-2">
+                    <div onclick="quickPrompt('Who created you?')" class="glass p-3.5 rounded-2xl hover:border-brand-500/50 cursor-pointer transition-all hover:scale-[1.02] group">
+                        <div class="flex items-center gap-2 font-semibold text-sm text-slate-200 group-hover:text-brand-accent">
+                            <i class="fa-solid fa-address-card text-indigo-400"></i> Who created this app?
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Learn about Smart World AI and its creator.</p>
+                    </div>
+
+                    <div onclick="quickPrompt('Write a poem in English or any language')" class="glass p-3.5 rounded-2xl hover:border-brand-500/50 cursor-pointer transition-all hover:scale-[1.02] group">
+                        <div class="flex items-center gap-2 font-semibold text-sm text-slate-200 group-hover:text-brand-accent">
+                            <i class="fa-solid fa-language text-purple-400"></i> Multilingual Support
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Chat seamlessly in Bengali, English, Arabic, etc.</p>
+                    </div>
+
+                    <div onclick="quickPrompt('Draw a futuristic spaceship picture')" class="glass p-3.5 rounded-2xl hover:border-brand-500/50 cursor-pointer transition-all hover:scale-[1.02] group">
+                        <div class="flex items-center gap-2 font-semibold text-sm text-slate-200 group-hover:text-brand-accent">
+                            <i class="fa-solid fa-image text-pink-400"></i> Generate AI Images
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Turn your thoughts into creative image prompts.</p>
+                    </div>
+
+                    <div onclick="quickPrompt('Solve 25 * (45 - 12) / 3')" class="glass p-3.5 rounded-2xl hover:border-brand-500/50 cursor-pointer transition-all hover:scale-[1.02] group">
+                        <div class="flex items-center gap-2 font-semibold text-sm text-slate-200 group-hover:text-brand-accent">
+                            <i class="fa-solid fa-square-root-variable text-emerald-400"></i> Math & Problem Solving
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Get step-by-step mathematical solutions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Messages List -->
+            <div id="messagesList" class="max-w-3xl mx-auto space-y-6"></div>
+        </div>
+
+        <!-- Chat Input Dock -->
+        <div class="p-3 md:p-4 glass border-t border-slate-800/80 z-20 shadow-2xl">
+            <div class="max-w-3xl mx-auto">
+                <form id="chatForm" class="relative flex items-end gap-2">
+                    
+                    <div class="relative flex-1 flex items-center bg-slate-900/90 border border-slate-700/80 rounded-2xl focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 shadow-inner transition-all pl-2">
+                        
+                        <!-- ChatGPT Style Plus (+) Attachment Button -->
+                        <button type="button" id="plusMenuBtn" title="Add attachments or tools" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition flex-shrink-0">
+                            <i class="fa-solid fa-plus text-base"></i>
+                        </button>
+
+                        <!-- Textarea Input -->
+                        <textarea id="userInput" rows="1" placeholder="Message Smart World..." 
+                            class="w-full bg-transparent py-3.5 pl-2 pr-10 text-slate-100 placeholder-slate-400 text-sm md:text-base focus:outline-none resize-none max-h-32"></textarea>
+                        
+                        <!-- Voice Input Button -->
+                        <button type="button" id="voiceBtn" title="Voice Input" class="absolute right-3 text-slate-400 hover:text-brand-accent p-1.5 transition">
+                            <i class="fa-solid fa-microphone text-base"></i>
+                        </button>
+                    </div>
+
+                    <!-- Send Button -->
+                    <button type="submit" id="sendBtn" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-accent hover:opacity-95 text-white flex items-center justify-center shadow-lg shadow-brand-600/30 active:scale-95 transition flex-shrink-0">
+                        <i class="fa-solid fa-paper-plane text-base"></i>
+                    </button>
+                </form>
+
+                <div class="flex items-center justify-between text-[11px] text-slate-400 px-2 mt-2 font-medium">
+                    <span>Smart World AI auto-detects and responds in your language.</span>
+                    <span class="hidden sm:inline">Press Shift + Enter for new line</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // State Management & Storage
+        let chatHistory = JSON.parse(localStorage.getItem('smart_world_chats') || '[]');
+        let isGenerating = false;
+
+        // Gemini API Config
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+        // Dynamic System Instruction (Strictly matching user input language)
+        const systemInstructionText = "You are Smart World, an advanced, highly knowledgeable, polite, versatile, and intelligent AI Assistant created by Fahmid Hasan. IMPORTANT: Always respond strictly in the exact same language in which the user writes their query or command. If the user asks in Bengali, reply in Bengali. If they ask in English, reply in English. If they ask in Arabic, Hindi, or any other language, reply in that language. If asked 'who created you' or 'who built you' or 'তোমাকে কে তৈরি করেছে', answer that you were created by Fahmid Hasan. Use clear markdown formatting, bold text, and bullet points where appropriate.";
+
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const openSidebarBtn = document.getElementById('openSidebarBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        const userInput = document.getElementById('userInput');
+        const chatForm = document.getElementById('chatForm');
+        const messagesList = document.getElementById('messagesList');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const chatContainer = document.getElementById('chatContainer');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+        const newChatBtn = document.getElementById('newChatBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const plusMenuBtn = document.getElementById('plusMenuBtn');
+        const chatHistoryList = document.getElementById('chatHistoryList');
+        const statusIndicator = document.getElementById('statusIndicator');
+
+        // Plus Button Action
+        plusMenuBtn.addEventListener('click', () => {
+            alert("Plus (+) features: Image generation, code helper, and quick prompts are enabled!");
+        });
+
+        // Initialize Saved History
+        window.onload = function() {
+            if (chatHistory.length > 0) {
+                welcomeScreen.classList.add('hidden');
+                chatHistory.forEach(msg => {
+                    renderMessageBubble(msg.role, msg.text, msg.type, msg.imageUrl, false);
+                });
+                updateSidebarHistory();
+            }
+        };
+
+        // Sidebar Navigation Toggles
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        });
+
+        const closeSidebar = () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        };
+
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Auto-expanding Input Box
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight < 128 ? this.scrollHeight : 128) + 'px';
+        });
+
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Quick Prompt Trigger
+        function quickPrompt(text) {
+            userInput.value = text;
+            userInput.focus();
+            chatForm.dispatchEvent(new Event('submit'));
+            closeSidebar();
+        }
+
+        // New Chat Button Action
+        newChatBtn.addEventListener('click', () => {
+            if (isGenerating) return;
+            messagesList.innerHTML = '';
+            welcomeScreen.classList.remove('hidden');
+            chatHistory = [];
+            localStorage.removeItem('smart_world_chats');
+            updateSidebarHistory();
+            closeSidebar();
+        });
+
+        // Clear Chat Log
+        clearChatBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all chat history?')) {
+                messagesList.innerHTML = '';
+                welcomeScreen.classList.remove('hidden');
+                chatHistory = [];
+                localStorage.removeItem('smart_world_chats');
+                updateSidebarHistory();
+            }
+        });
+
+        // Speech Recognition Setup
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+
+            voiceBtn.addEventListener('click', () => {
+                try {
+                    recognition.start();
+                    voiceBtn.classList.add('text-rose-500', 'animate-pulse');
+                } catch(e) {
+                    recognition.stop();
+                    voiceBtn.classList.remove('text-rose-500', 'animate-pulse');
+                }
+            });
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                voiceBtn.classList.remove('text-rose-500', 'animate-pulse');
+                userInput.focus();
+            };
+
+            recognition.onerror = () => voiceBtn.classList.remove('text-rose-500', 'animate-pulse');
+            recognition.onend = () => voiceBtn.classList.remove('text-rose-500', 'animate-pulse');
+        } else {
+            voiceBtn.style.display = 'none';
+        }
+
+        function checkCreatorOrImageRules(query) {
+            const q = query.trim().toLowerCase();
+
+            const creatorPatterns = [
+                'who created you', 'who made you', 'who built you', 'who is your creator', 'who designed you',
+                'তোমাকে কে তৈরি করেছে', 'কে বানিয়েছে', 'তৈরি করেছেন কে', 'তৈরি কে করেছে'
+            ];
+            if (creatorPatterns.some(p => q.includes(p))) {
+                const isBn = /[অ-হ]/.test(q);
+                return {
+                    matched: true,
+                    text: isBn 
+                        ? "আমাকে **Fahmid Hasan** তৈরি করেছে। তিনি আমাকে একটি সহজ, দ্রুত এবং আধুনিক AI Assistant হিসেবে ডিজাইন করেছেন।"
+                        : "I was created by **Fahmid Hasan**. He built me as a fast, smart, and versatile AI Assistant."
+                };
+            }
+
+            const imageKeywords = ['draw', 'generate image', 'picture of', 'photo of', 'ছবি', 'আঁকো', 'ছবি তৈরি'];
+            if (imageKeywords.some(k => q.includes(k))) {
+                const promptClean = query.replace(/(ছবি|তৈরি করো|আঁকো|generate|image|draw|a|picture|of|photo)/gi, '').trim() || 'futuristic city';
+                return {
+                    matched: true,
+                    type: 'image',
+                    prompt: promptClean,
+                    imageUrl: `https://i.ibb.co.com/p6ZstQdv/image.png`,
+                    text: `Here is the generated image based on your prompt:\n\n**Prompt:** "${promptClean}"`
+                };
+            }
+
+            return { matched: false };
+        }
+
+        async function fetchGeminiAIResponse(prompt) {
+            const specialCheck = checkCreatorOrImageRules(prompt);
+            if (specialCheck.matched) {
+                return specialCheck;
+            }
+
+            const contents = chatHistory.map(item => ({
+                role: item.role === 'user' ? 'user' : 'model',
+                parts: [{ text: item.text }]
+            }));
+            
+            contents.push({
+                role: 'user',
+                parts: [{ text: prompt }]
+            });
+
+            const payload = {
+                contents: contents,
+                systemInstruction: {
+                    parts: [{ text: systemInstructionText }]
+                }
+            };
+
+            let delay = 1000;
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    statusIndicator.innerText = "Thinking...";
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (replyText) {
+                            statusIndicator.innerText = "Online & Ready";
+                            return { matched: true, text: replyText };
+                        }
+                    }
+                } catch (err) {
+                    console.warn(`Attempt ${attempt + 1} failed, retrying...`);
+                }
+                await new Promise(res => setTimeout(res, delay));
+                delay *= 2;
+            }
+
+            statusIndicator.innerText = "Online & Ready";
+            return {
+                matched: true,
+                text: `**Smart World AI (Offline Mode):**\n\nYour message: "${prompt}"\n\nUnable to reach the server right now. Please check your internet connection and try again.`
+            };
+        }
+
+        function renderMessageBubble(sender, content, type = 'text', imageUrl = null, animate = true) {
+            welcomeScreen.classList.add('hidden');
+
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = `flex gap-3 md:gap-4 ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+            const isUser = sender === 'user';
+
+            const avatarHtml = isUser ? `
+                <div class="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white text-xs md:text-sm font-bold flex-shrink-0 shadow-md">
+                    Me
+                </div>
+            ` : `
+                <div class="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-tr from-brand-600 via-brand-accent to-purple-400 flex items-center justify-center text-white text-xs md:text-sm font-bold flex-shrink-0 shadow-lg shadow-brand-500/20 overflow-hidden">
+                    <img src="https://i.ibb.co.com/p6ZstQdv/image.png" alt="AI Avatar" class="w-full h-full object-cover">
+                </div>
+            `;
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = `max-w-[88%] md:max-w-[80%] rounded-2xl p-4 text-sm md:text-base prose prose-invert ${
+                isUser 
+                ? 'bg-brand-600 text-white rounded-tr-none shadow-md' 
+                : 'glass text-slate-100 rounded-tl-none border border-slate-700/60 shadow-lg'
+            }`;
+
+            if (type === 'image' && imageUrl) {
+                bubbleDiv.innerHTML = `
+                    <p class="mb-3">${marked.parse(content)}</p>
+                    <div class="relative group rounded-xl overflow-hidden border border-slate-700/80 bg-slate-950">
+                        <img src="${imageUrl}" alt="AI generated" class="w-full h-auto max-h-72 object-cover rounded-xl transition duration-300 transform group-hover:scale-105" loading="lazy">
+                        <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 to-transparent p-3 text-xs text-slate-300 flex items-center justify-between">
+                            <span>🎨 Smart World Image Gen</span>
+                            <a href="${imageUrl}" target="_blank" class="hover:text-white underline">Full View</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                bubbleDiv.innerHTML = marked.parse(content || '');
+            }
+
+            if (isUser) {
+                messageWrapper.appendChild(bubbleDiv);
+                messageWrapper.appendChild(parseAvatarNode(avatarHtml));
+            } else {
+                messageWrapper.appendChild(parseAvatarNode(avatarHtml));
+                messageWrapper.appendChild(bubbleDiv);
+            }
+
+            messagesList.appendChild(messageWrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return bubbleDiv;
+        }
+
+        function parseAvatarNode(htmlString) {
+            const template = document.createElement('template');
+            template.innerHTML = htmlString.trim();
+            return template.content.firstChild;
+        }
+
+        function updateSidebarHistory() {
+            if (!chatHistoryList) return;
+            if (chatHistory.length === 0) {
+                chatHistoryList.innerHTML = '<div class="px-3 py-2 text-slate-500 italic">No history yet</div>';
+                return;
+            }
+
+            chatHistoryList.innerHTML = '';
+            const userMessages = chatHistory.filter(m => m.role === 'user');
+            
+            userMessages.slice(-8).reverse().forEach(msg => {
+                const item = document.createElement('div');
+                item.className = 'px-3 py-2 rounded-lg hover:bg-slate-800/60 text-slate-300 hover:text-white cursor-pointer truncate transition';
+                item.innerText = msg.text;
+                item.onclick = () => {
+                    quickPrompt(msg.text);
+                };
+                chatHistoryList.appendChild(item);
+            });
+        }
+
+        // Form Submit Handler
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const text = userInput.value.trim();
+            if (!text || isGenerating) return;
+
+            isGenerating = true;
+
+            // Render User Bubble
+            renderMessageBubble('user', text);
+            chatHistory.push({ role: 'user', text: text });
+            
+            userInput.value = '';
+            userInput.style.height = 'auto';
+
+            // Show Typing Indicator
+            const typingWrapper = document.createElement('div');
+            typingWrapper.className = 'flex gap-3 md:gap-4 justify-start';
+            typingWrapper.id = 'typingIndicator';
+            typingWrapper.innerHTML = `
+                <div class="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-tr from-brand-600 via-brand-accent to-purple-400 flex items-center justify-center text-white text-xs md:text-sm font-bold flex-shrink-0 shadow-lg shadow-brand-500/20 overflow-hidden">
+                    <img src="https://i.ibb.co.com/p6ZstQdv/image.png" alt="AI Avatar" class="w-full h-full object-cover">
+                </div>
+                <div class="glass text-slate-100 rounded-2xl rounded-tl-none p-4 text-sm border border-slate-700/60 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-purple-400 animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-brand-500 animate-bounce [animation-delay:0.4s]"></span>
+                </div>
+            `;
+            messagesList.appendChild(typingWrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Fetch AI Response
+            const aiResponse = await fetchGeminiAIResponse(text);
+
+            // Remove Typing Indicator
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+
+            // Render AI Response Bubble
+            renderMessageBubble('model', aiResponse.text, aiResponse.type || 'text', aiResponse.imageUrl || null);
+            
+            // Save to Local Storage
+            chatHistory.push({ 
+                role: 'model', 
+                text: aiResponse.text, 
+                type: aiResponse.type || 'text', 
+                imageUrl: aiResponse.imageUrl || null 
+            });
+            localStorage.setItem('smart_world_chats', JSON.stringify(chatHistory));
+
+            updateSidebarHistory();
+            isGenerating = false;
+        });
+    </script>
+</body>
+</html>
